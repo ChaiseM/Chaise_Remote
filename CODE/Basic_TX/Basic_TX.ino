@@ -22,14 +22,19 @@ GND   -> GND
 
 const static uint8_t RADIO_ID = 1;             // Our radio's id.
 const static uint8_t DESTINATION_RADIO_ID = 0; // Id of the radio we will transmit to.
-const static uint8_t PIN_RADIO_CE = 7;
-const static uint8_t PIN_RADIO_CSN = 8;
+const static uint8_t PIN_RADIO_CE = 5;
+const static uint8_t PIN_RADIO_CSN = 6;
 
+int analogPin = 3; // potentiometer wiper (middle terminal) connected to analog pin 3
+                    // outside leads to ground and +5V
+int val = 0;  // variable to store the value read
 
 
 struct RadioPacket // Any packet up to 32 bytes can be sent.
 {
-    int buttonstateSend;
+    uint8_t FromRadioId;
+    uint8_t buttonstateSend;
+    uint8_t PotValue;
 };
 
 NRFLite _radio;
@@ -53,15 +58,26 @@ void setup()
         Serial.println("Cannot communicate with radio");
         while (1); // Wait here forever.
     }
+
+     _radioData.FromRadioId = RADIO_ID;
 } 
     
 
 void loop()
 {
-    _radioData.buttonstateSend = digitalRead(btn);
+   
+   
+   
 
-    Serial.print("Sending ");
-    Serial.print( _radioData.buttonstateSend);
+   
+    _radioData.buttonstateSend = digitalRead(btn);
+    val = analogRead(analogPin);
+    Serial.println(val);
+    val = map(val,0,1024,0,255);
+    Serial.println(val);
+    _radioData.PotValue = val;  // read the input pin
+
+  
   
 
     // By default, 'send' transmits data and waits for an acknowledgement.  If no acknowledgement is received,
@@ -82,5 +98,6 @@ void loop()
        
     }
 
+   delay(10);
    
 }
